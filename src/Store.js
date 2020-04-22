@@ -13,11 +13,30 @@ export class TemplateItem {
   valueType = 'text';
   dataType = 'TEXT';
   value = '';
+  label = '';
+  style = {};
 
   changeValue = e => this.value = e.target.value;
   setValue = val => this.value = val;
   setValueType = val => this.valueType = val;
   setDataType = val => this.dataType = val;
+  setLabel = val => this.label = val;
+  addStyle = (s, v) => this.style = {...this.style, [s]: v}
+  setStyle = val => this.style = val;
+
+  removeStyle = s => {
+    const newStyle = Object.keys(this.style).reduce((object, key) => {
+      if (key !== s) {
+        object[key] = this.style[key]
+      }
+      return object
+    }, {});
+    this.setStyle(newStyle);
+  }
+
+  hasStyle = val => {
+    return this.style.hasOwnProperty(val);
+  }
 
   changeSize = (w, h, x, y) => {
     this.w = w;
@@ -26,10 +45,11 @@ export class TemplateItem {
     this.y = y;
   };
 
-  changeValue1 = (value, type, dataType) => {
+  changeValue1 = (value, type, dataType, label) => {
     this.setValue(value);
     this.setValueType(type);
     this.setDataType(dataType);
+    this.setLabel(label);
   }
 }
 
@@ -42,12 +62,20 @@ decorate(TemplateItem, {
   static: observable,
   valueType: observable,
   value: observable,
+  dataType: observable,
+  label: observable,
+  style: observable,
 
   changeValue: action,
   setValue: action,
   setValueType: action,
   changeValue1: action,
-  changeSize: action
+  changeSize: action,
+  setLabel: action,
+  setDataType: action,
+  addStyle: action,
+  setStyle: action,
+  removeStyle: action
 })
 
 
@@ -63,6 +91,8 @@ export class Template {
   createItem = () => {
     this.currentItem = new TemplateItem();
   }
+
+  setCurrentItem = val => this.currentItem = val;
 
   addItem = () => {
     this.items = [...this.items, this.currentItem]
@@ -85,7 +115,8 @@ decorate(Template, {
 
   changeName: action,
   createItem: action,
-  addItem: action
+  addItem: action,
+  setCurrentItem: action
 });
 
 export class Store {

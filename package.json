@@ -30,6 +30,7 @@
     "mobx": "^5.15.4",
     "mobx-react": "^6.2.2",
     "qrcode.react": "^1.0.0",
+    "react-barcode": "^1.4.0",
     "react-grid-layout": "^0.18.3",
     "react-router-dom": "^5.1.2",
     "react-to-print": "^2.6.3",
