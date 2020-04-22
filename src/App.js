@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React from 'react'
 import 'antd/dist/antd.css';
 import {
   HashRouter as Router,
@@ -12,6 +12,8 @@ import {Provider} from "./context/context";
 import {Store} from "./Store";
 import './App.css'
 import {Template} from "./Template";
+import {Templates} from "./Templates";
+import 'mobx-react/batchingForReactDom'
 
 const MyApp = () => {
   const engine = useDataEngine();
@@ -23,7 +25,10 @@ const MyApp = () => {
           <Route exact path="/">
             <Home/>
           </Route>
-          <Route path="/templates/editor">
+          <Route path="/templates/list">
+            <Templates/>
+          </Route>
+          <Route path="/templates/add">
             <Template/>
           </Route>
           <Route path="/:instance">

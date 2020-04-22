@@ -1,4 +1,5 @@
-import React, { useContext,useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
+import {useLocation} from "react-router-dom";
 
 const MSTContext = React.createContext(null);
 
@@ -20,6 +21,11 @@ function getWindowDimensions() {
     height
   };
 }
+
+export const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
+
 
 export function useWindowDimensions() {
   const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());

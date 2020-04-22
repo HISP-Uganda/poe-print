@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Card, Input, Table, Drawer, List, Checkbox} from "antd";
+import {Card, Input, Table, Drawer, List, Checkbox, Select} from "antd";
 import {SettingOutlined} from '@ant-design/icons'
 import {useStore} from "./context/context";
 import {observer} from "mobx-react";
-import {useHistory} from 'react-router-dom'
+import {useHistory} from 'react-router-dom';
 
 const {Search} = Input;
-
+const {Option} = Select;
 
 export const Home = observer(() => {
   const store = useStore();
@@ -23,10 +23,17 @@ export const Home = observer(() => {
   };
 
   useEffect(() => {
-    store.queryData();
+    store.initiate();
   }, [store]);
 
   return <div style={{padding: 10, background: '#F7F7F7', 'minHeight': '95vh'}}>
+    <Select
+      size="large"
+      value={store.selectedProgram}
+      style={{width: '100%', marginBottom: 10}}
+      onChange={store.onChange}>
+      {store.programs.map(program => <Option key={program.id} value={program.id}>{program.name}</Option>)}
+    </Select>
     <Card
       title="Registered and allowed travellers into Uganda - COVID19 Response"
       extra={<SettingOutlined style={{fontSize: '24px'}} onClick={showDrawer}/>}
@@ -44,13 +51,13 @@ export const Home = observer(() => {
         onRow={(record, rowIndex) => {
           return {
             onClick: event => {
-              history.push(`/${record['CLzIR1Ye97b']}`);
+              history.push(`/${record[store.rowKey]}?type=${store.rowKey}&program=${store.selectedProgram}&stage=${store.currentProgramStage}&isEvent=${store.currentProgram.programType === 'WITHOUT_REGISTRATION'}`);
             },
           };
         }}
         columns={store.columns}
-        dataSource={store.trackedEntityInstances}
-        rowKey="instance"
+        dataSource={store.data}
+        rowKey={store.rowKey}
         size="middle"
         onChange={store.handleChange}
         style={{textTransform: "uppercase", fontSize: 12}}

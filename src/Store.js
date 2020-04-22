@@ -1,10 +1,96 @@
-import {decorate, observable, action, computed} from "mobx";
+import {decorate, observable, action, computed, extendObservable} from "mobx";
 import React from "react";
-import {fromPairs, isEmpty, has} from 'lodash';
+import {fromPairs, isEmpty, groupBy, keys, last} from 'lodash';
+import {generateUid} from "./utils/uid";
+
+export class TemplateItem {
+  x = 0;
+  y = 0;
+  h = 1;
+  w = 1;
+  i = generateUid();
+  static = false
+  valueType = 'text';
+  dataType = 'TEXT';
+  value = '';
+
+  changeValue = e => this.value = e.target.value;
+  setValue = val => this.value = val;
+  setValueType = val => this.valueType = val;
+  setDataType = val => this.dataType = val;
+
+  changeSize = (w, h, x, y) => {
+    this.w = w;
+    this.h = h;
+    this.x = x;
+    this.y = y;
+  };
+
+  changeValue1 = (value, type, dataType) => {
+    this.setValue(value);
+    this.setValueType(type);
+    this.setDataType(dataType);
+  }
+}
+
+decorate(TemplateItem, {
+  x: observable,
+  y: observable,
+  h: observable,
+  w: observable,
+  i: observable,
+  static: observable,
+  valueType: observable,
+  value: observable,
+
+  changeValue: action,
+  setValue: action,
+  setValueType: action,
+  changeValue1: action,
+  changeSize: action
+})
+
+
+export class Template {
+  id = generateUid();
+  program = '';
+  name = '';
+  items = [];
+  currentItem = new TemplateItem();
+
+  changeName = e => this.name = e.target.value;
+
+  createItem = () => {
+    this.currentItem = new TemplateItem();
+  }
+
+  addItem = () => {
+    this.items = [...this.items, this.currentItem]
+  }
+
+  createImage = (value) => {
+    this.currentItem = new TemplateItem();
+    this.currentItem.setDataType('IMAGE');
+    this.currentItem.setValueType('image');
+    this.currentItem.setValue(value);
+    this.addItem();
+  }
+}
+
+decorate(Template, {
+  id: observable,
+  program: observable,
+  name: observable,
+  items: observable,
+
+  changeName: action,
+  createItem: action,
+  addItem: action
+});
 
 export class Store {
   engine;
-  trackedEntityInstances = [];
+  data = [];
   query = '';
   page = 1;
   total = 0;
@@ -14,20 +100,18 @@ export class Store {
   currentHeaders = [];
   otherInstances = [];
   visible = false;
-  programId = 'nBWFG3fYC8N';
-  programStageID = 'geweXwkKtFQ'; //TODO: Configure
+  selectedProgram;
+  currentProgram;
+  programStageID = '';
   options = {};
   userOrgUnits = [];
-
-  attributesWithOptionSet = {
-    XvETY1aTxuB: 'Countries',
-    cW0UPEANS5t: 'Countries',
-    pxcXhmjJeMv: 'Countries',
-    wJpIzoGlb9j: 'Countries',
-    zhWTXIwd6U1: 'Countries',
-    x9YWFwwuQnG: 'Countries'
-  }
+  programs = [];
+  templates = [];
+  currentTemplate = new Template();
   availableAttributes = [];
+  validTemplates = [];
+  currentValidTemplate = '';
+  parameters = {};
 
   constructor(engine) {
     this.engine = engine;
@@ -35,50 +119,35 @@ export class Store {
 
   queryOptions = async () => {
     const q = {
-      optionSets: {
-        resource: 'optionSets.json',
-        params: {
-          fields: 'id,name,options[code,name]',
-          paging: 'false',
-          filter: 'name:in:[Countries]'
-        }
-      },
       me: {
         resource: 'me.json',
         params: {
           fields: 'organisationUnits[id]'
         }
       },
-      program: {
-        resource: `programs/${this.programId}`,
+      programs: {
+        resource: 'programs.json',
         params: {
-          fields: 'programTrackedEntityAttributes[displayInList,trackedEntityAttribute[id,name]]'
+          paging: 'false',
+          fields: 'id,name,displayName,lastUpdated,programType,trackedEntityType,trackedEntity,programTrackedEntityAttributes[mandatory,displayInList,valueType,trackedEntityAttribute[id,code,name,displayName,unique,optionSet[options[name,code]]]],programStages[id,name,displayName,repeatable,programStageDataElements[displayInReports,compulsory,dataElement[id,code,valueType,name,displayName,optionSet[options[name,code]]]]]'
         }
       }
     }
-    const {optionSets, program: {programTrackedEntityAttributes}, me: {organisationUnits}} = await this.engine.query(q);
-    const processedOptionSets = optionSets.optionSets.map(({name, options}) => {
-      const optionsMap = fromPairs(options.map(o => [o.code, o.name]));
-      return [name, optionsMap]
-    });
-    this.options = fromPairs(processedOptionSets);
-
-    this.availableAttributes = programTrackedEntityAttributes.map(({displayInList: selected, trackedEntityAttribute}) => {
-      return {...trackedEntityAttribute, selected};
-    });
+    const {me: {organisationUnits}, programs} = await this.engine.query(q);
     this.userOrgUnits = organisationUnits.map(ou => ou.id).join(';');
+    this.programs = programs.programs;
   }
 
   queryData = async () => {
     await this.queryOptions();
-    const {trackedEntityInstances} = await this.engine.query(this.currentQuery);
-    const {metaData: {pager}} = trackedEntityInstances;
+    const {data} = await this.engine.query(this.currentQuery);
+    const {metaData: {pager}} = data;
     this.pageSize = pager.pageSize;
     this.total = pager.total;
     this.page = pager.page;
-    this.currentHeaders = trackedEntityInstances.headers;
-    const headers = trackedEntityInstances.headers.map(h => h['name']);
-    this.trackedEntityInstances = trackedEntityInstances.rows.map(r => {
+    this.currentHeaders = data.headers;
+    const headers = data.headers.map(h => h['name']);
+    this.data = data.rows.map(r => {
       return Object.assign.apply({}, headers.map((v, i) => ({
         [v]: r[i]
       })));
@@ -171,23 +240,194 @@ export class Store {
     this.setAvailableAttributes(attributes);
   }
 
+  fetchOrCreateDataStore = async (namespace, key) => {
+    const query3 = {
+      [namespace]: {
+        resource: `dataStore/${namespace}/${key}`
+      }
+    };
+    try {
+      const result = await this.engine.query(query3);
+      return result[namespace];
+    } catch (e) {
+      let createMutation = {
+        type: 'create',
+        resource: `dataStore/${namespace}/${key}`,
+        data: []
+      };
+      try {
+        await this.engine.mutate(createMutation);
+        return []
+      } catch (error) {
+        console.error("Failed to create store", error);
+      }
+    }
+  }
+
+  updateDataStore = async (namespace, key, values) => {
+    let createMutation = {
+      type: 'update',
+      resource: `dataStore/${namespace}/${key}`,
+      data: values
+    };
+    try {
+      await this.engine.mutate(createMutation);
+    } catch (error) {
+      console.error("Failed to fetch projects", error);
+    }
+  }
+
+  saveTemplate = async () => {
+    this.currentTemplate.program = this.selectedProgram
+    const index = this.templates.findIndex(t => t.id === this.currentTemplate.id);
+    if (index !== -1) {
+      this.templates.splice(index, 1, this.currentTemplate);
+    } else {
+      this.templates = [...this.templates, this.currentTemplate];
+    }
+    await this.updateDataStore('poe', 'templates', this.templates);
+  }
+
+  onChange = async (program) => {
+    this.data = [];
+    this.selectedProgram = program;
+    this.currentProgram = this.programs.find(p => p.id === program);
+
+    if (this.currentProgram.programType === 'WITHOUT_REGISTRATION') {
+      this.availableAttributes = this.currentProgram.programStages[0].programStageDataElements.map(({displayInReports: selected, dataElement: {name, id}}) => {
+        return {id, name, selected};
+      });
+    } else {
+      this.availableAttributes = this.currentProgram.programTrackedEntityAttributes.map(({displayInList: selected, trackedEntityAttribute: {id, name}}) => {
+        return {id, name, selected};
+      });
+    }
+    await this.queryData();
+  }
+
+  initiate = async () => {
+    await this.queryOptions();
+  }
+
+  fetchTemplates = async () => {
+    this.templates = await this.fetchOrCreateDataStore('poe', 'templates')
+  }
+
+  addTemplate = () => {
+    this.currentTemplate = new Template();
+  }
+
+  searchValidTemplates = (program) => {
+    this.validTemplates = this.templates.filter(t => t.program === program);
+  }
+
+  setCurrentValidTemplate = async (val) => {
+    this.currentValidTemplate = val;
+    const template = new Template();
+
+    let q = {
+      resource: `events/${this.parameters.instance}.json`
+    }
+
+    if (this.parameters.type === 'instance') {
+      q = {
+        ...q,
+        resource: `trackedEntityInstances/${this.parameters.instance}.json`,
+        params: {fields: '*', program: this.parameters.program}
+      }
+    }
+
+    const {data} = await this.engine.query({data: q});
+    let processedData = {};
+
+    if (this.parameters.type === 'instance') {
+      const {attributes, enrollments, ...trackedEntityInstance} = data;
+
+      const allAttributes = fromPairs(attributes.map(dv => {
+        return [dv.attribute, dv.value]
+      }));
+
+      processedData = {...trackedEntityInstance, ...processedData, ...allAttributes}
+      const enrollment = enrollments.find(e => e.program === this.parameters.program);
+      if (enrollment) {
+        const {events, relationships, attributes, ...others} = enrollment;
+        const evs = groupBy(events, 'programStage');
+
+        const processedEvents = keys(evs).map(k => {
+          const {dataValues, ...event} = last(evs[k]);
+          const dvs = fromPairs(dataValues.map(dv => {
+            return [dv.dataElement, dv.value]
+          }));
+          return [k, {...dvs, ...event}]
+        });
+
+        const allEvents = fromPairs(processedEvents);
+        processedData = {...processedData, ...allEvents, ...others};
+      }
+    } else {
+      const {dataValues, ...event} = data;
+      const dvs = fromPairs(dataValues.map(dv => {
+        return [dv.dataElement, dv.value]
+      }));
+      processedData = {...event, ...dvs};
+    }
+
+    const {id, name, program, items} = this.validTemplates.find(t => t.id === val);
+
+    const ti = items.map(({x, y, h, w, i, valueType, dataType, value}) => {
+      const item = new TemplateItem();
+      if (valueType !== 'text' && valueType !== 'image') {
+        if (dataType === 'IMAGE') {
+        } else {
+          value = String(value).replace('{', '').replace('}', '');
+          value = processedData[value];
+        }
+      }
+      extendObservable(item, {x, y, h, w, i, valueType, dataType, static: true, value});
+      return item;
+    });
+    extendObservable(template, {id, name, program, items: ti});
+    this.currentTemplate = template;
+  }
+
+  setParameters = val => this.parameters = val;
+
   get currentQuery() {
     let params = {
       page: this.page,
       totalPages: 'true',
       ouMode: 'DESCENDANTS',
       ou: this.userOrgUnits,
-      program: this.programId,
       pageSize: this.pageSize,
       order: this.sorter
     };
+
     if (this.query !== '') {
       params = {...params, query: `LIKE:${this.query}`}
     }
-    return {
-      trackedEntityInstances: {
-        resource: 'trackedEntityInstances/query.json',
-        params
+
+    if (this.currentProgram.programType === 'WITHOUT_REGISTRATION') {
+      params = {
+        ...params,
+        programStage: this.currentProgram.programStages[0].id,
+        includeAllDataElements: 'true',
+      };
+      return {
+        data: {
+          resource: 'events/query.json',
+          params
+        }
+      }
+    } else {
+      params = {
+        ...params,
+        program: this.selectedProgram
+      };
+      return {
+        data: {
+          resource: 'trackedEntityInstances/query.json',
+          params
+        }
       }
     }
   }
@@ -201,20 +441,31 @@ export class Store {
         dataIndex: a.name,
         sorter: true,
         render: (text, row) => {
-          if (has(this.attributesWithOptionSet, a.name)) {
-            return <div>{this.options[this.attributesWithOptionSet[a.name]][row[a.name]]}</div>
-          }
+          // if (has(this.attributesWithOptionSet, a.name)) {
+          //   return <div>{this.options[this.attributesWithOptionSet[a.name]][row[a.name]]}</div>
+          // }
           return <div>{row[a.name]}</div>
         }
       }
     }).filter(column => attributes.indexOf(column.key) !== -1);
+  }
+
+  get rowKey() {
+    if (this.currentProgram && this.currentProgram.programType === 'WITHOUT_REGISTRATION') return 'event'
+    return 'instance'
+  }
+
+  get currentProgramStage() {
+    if (this.currentProgram && this.currentProgram.programType === 'WITHOUT_REGISTRATION')
+      return this.currentProgram.programStages[0].id;
+    return 'XXXX'
   }
 }
 
 
 decorate(Store, {
   engine: observable,
-  trackedEntityInstances: observable,
+  data: observable,
   query: observable,
   page: observable,
   pageSize: observable,
@@ -228,6 +479,13 @@ decorate(Store, {
   currentInstance: observable,
   userOrgUnits: observable,
   programStageID: observable,
+  programs: observable,
+  templates: observable,
+  currentTemplate: observable,
+  selectedProgram: observable,
+  validTemplates: observable,
+  currentValidTemplate: observable,
+  parameters: observable,
 
   queryData: action,
   handleChange: action,
@@ -240,6 +498,13 @@ decorate(Store, {
   setAvailableAttributes: action,
   includeColumns: action,
   queryOneInstances: action,
+  saveTemplate: action,
+  initiate: action,
+  onChange: action,
+  addTemplate: action,
+  setCurrentValidTemplate: action,
+  setParameters: action,
+  searchValidTemplates: action,
 
   currentQuery: computed,
   columns: computed,
