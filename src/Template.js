@@ -3,6 +3,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import {useStore} from "./context/context";
+import { SketchPicker } from 'react-color';
 import {
   Button,
   Modal,
@@ -54,6 +55,8 @@ export const Template = observer(() => {
 
   const [qrItems, setQrItems] = useState([]);
   const [barItems, setBarItems] = useState([]);
+
+  const [size, setSize] = useState({width: 1240, height: 1754})
 
   const addQrItem = val => e => {
     if (e.target.checked && qrItems.indexOf(val) === -1) {
@@ -181,28 +184,30 @@ export const Template = observer(() => {
     }
   }
 
-  return <div style={{display: 'flex', background: '#F7F7F7', flexDirection: 'column', padding: 10, minHeight: '95vh'}}>
-    <div style={{display: 'flex', marginBottom: 10}}>
-      <div style={{width: '50%'}}>
-        <Select
-          size="large"
-          value={store.selectedProgram}
-          style={{width: '40%'}}
-          onChange={store.onChange}>
-          {store.programs.map(program => <Option key={program.id} value={program.id}>{program.name}</Option>)}
-        </Select>
-        &nbsp;&nbsp;&nbsp;
-        <Input style={{width: '40%'}} size="large" value={store.currentTemplate.name}
-               onChange={store.currentTemplate.changeName} placeholder="Template Name"/>
-      </div>
-      <div style={{marginLeft: 'auto'}}>
+  const changeSize = (type) => (value) => {
+    setSize({...size, [type]: value})
+  }
+  return <div style={{display: 'flex', background: '#F7F7F7', flexDirection: 'column'}}>
+    <div style={{display: 'flex', marginBottom: 10, background: '#2B6693', flexDirection: 'column'}}>
+      <div style={{display: 'flex'}}>
+        <div style={{width: '50%'}}>
+          <Select
+            size="large"
+            value={store.selectedProgram}
+            style={{width: '40%'}}
+            onChange={store.onChange}>
+            {store.programs.map(program => <Option key={program.id} value={program.id}>{program.name}</Option>)}
+          </Select>
+          &nbsp;&nbsp;&nbsp;
+          <Input style={{width: '40%'}} size="large" value={store.currentTemplate.name}
+                 onChange={store.currentTemplate.changeName} placeholder="Template Name"/>
+        </div>
+        <div style={{marginLeft: 'auto'}}>
 
-        <Button size="large" onClick={saveTemplate}>Save</Button>
+          <Button size="large" onClick={saveTemplate}>Save</Button>
+        </div>
       </div>
-    </div>
-
-    <Card
-      title={<div>
+      <div>
         <Button size="large" onClick={showModal('dataElements')} disabled={!store.currentProgram}>DHIS2</Button>
         <Button size="large" onClick={showModal('text')}>Text</Button>
         <Button size="large" onClick={() => addHtmlItem('TEXTBOX')}>TEXT BOX</Button>
@@ -217,11 +222,21 @@ export const Template = observer(() => {
         </Upload>
         <InputNumber size="large" min={8} max={72} defaultValue={12}
                      onChange={(value) => store.currentTemplate.currentItem.addStyle('fontSize', value)}/>
+
         <Button size="large"
                 onClick={() => store.currentTemplate.currentItem.hasStyle('fontWeight') ? store.currentTemplate.currentItem.removeStyle('fontWeight') : store.currentTemplate.currentItem.addStyle('fontWeight', 'bold')}>BOLD</Button>
-        <Button size="large" onClick={() => store.currentTemplate.currentItem.hasStyle('fontStyle') ? store.currentTemplate.currentItem.removeStyle('fontStyle') : store.currentTemplate.currentItem.addStyle('fontStyle', 'italic')}>ITALIC</Button>
-      </div>}
-      bodyStyle={{background: '#F7F7F7'}}
+        <Button size="large"
+                onClick={() => store.currentTemplate.currentItem.hasStyle('fontStyle') ? store.currentTemplate.currentItem.removeStyle('fontStyle') : store.currentTemplate.currentItem.addStyle('fontStyle', 'italic')}>ITALIC</Button>
+        Size
+        <InputNumber size="large" min={595} defaultValue={794} value={size.width} onChange={changeSize('width')}/> X
+        <InputNumber value={size.height} size="large" min={842} defaultValue={1123} onChange={changeSize('height')}/>
+      </div>
+    </div>
+
+    <Card
+      bordered={false}
+      style={{...size, marginTop: 10, marginBottom: 10, marginLeft: 'auto', marginRight: 'auto'}}
+      bodyStyle={{overflow: 'auto'}}
     >
       <ResponsiveGridLayout
         className="layout"
@@ -326,6 +341,14 @@ export const Template = observer(() => {
           </Collapse>
         </TabPane>
       </Tabs>
+    </Modal>
+    <Modal
+      title="Color"
+      visible={dialogs.bar}
+      onOk={addBarcode}
+      onCancel={handleCancel('bar')}
+    >
+      <SketchPicker />
     </Modal>
     <Modal
       title="BARCODE"
@@ -459,9 +482,7 @@ export const Template = observer(() => {
               </Panel>) : null}
           </Collapse>
         </TabPane>
-
       </Tabs>
-
     </Drawer>
   </div>
 });
