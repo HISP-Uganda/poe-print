@@ -1,7 +1,7 @@
 import React, {useRef, useState, useEffect} from 'react';
 import ReactToPrint from 'react-to-print';
 import {Link, useHistory, useParams} from 'react-router-dom'
-import {Card, Menu, Modal, Select, Table} from "antd";
+import {Card, Checkbox, Input, Menu, Modal, Radio, Select, Table} from "antd";
 import QrCode from 'qrcode.react';
 import {useConfig} from '@dhis2/app-runtime';
 import {PrinterOutlined, EyeOutlined, HomeOutlined} from '@ant-design/icons';
@@ -10,6 +10,7 @@ import {useQuery, useStore} from "./context/context";
 import {isEmpty} from "lodash";
 import SimpleCrypto from "simple-crypto-js";
 import {Responsive, WidthProvider} from "react-grid-layout";
+import Barcode from "react-barcode";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 const {Option} = Select
@@ -46,6 +47,16 @@ const InstanceData = observer(() => {
     switch (item.valueType) {
       case 'image':
         return <img src={item.value} alt="image"/>
+      case 'qr':
+        return <QrCode value={item.value} renderAs="svg"/>
+      case 'barcode':
+        return <Barcode value={item.value}/>
+      case 'TEXTBOX':
+        return <Input/>
+      case 'RADIO':
+        return <Radio/>
+      case 'CHECKBOX':
+        return <Checkbox/>
       default:
         return <span>{item.value}</span>
     }
@@ -80,7 +91,7 @@ const InstanceData = observer(() => {
           y: item.y,
           i: item.id,
           static: item.static
-        }}>
+        }} style={{...item.style}}>
           {display(item)}
         </div>
       )}

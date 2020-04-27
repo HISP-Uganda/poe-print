@@ -3,7 +3,7 @@ import {Responsive, WidthProvider} from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import {useStore} from "./context/context";
-import { SketchPicker } from 'react-color';
+import {SketchPicker} from 'react-color';
 import {
   Button,
   Modal,
@@ -90,52 +90,51 @@ export const Template = observer(() => {
     store.currentTemplate.currentItem.setLabel(store.currentTemplate.currentItem.value);
     store.currentTemplate.addItem();
     setDialogs({...dialogs, text: false});
-    store.currentTemplate.createItem();
   }
 
   const addHtmlItem = (html) => {
+    store.currentTemplate.createItem();
     store.currentTemplate.currentItem.changeValue1(html, html, html, html);
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem();
   }
 
   const addQR = () => {
+    // store.currentTemplate.createItem();
     store.currentTemplate.currentItem.changeValue1(qrItems.join(','), 'qr', 'QR', qrItems.join(','));
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem();
     setQrItems([]);
     setDialogs({...dialogs, qr: false});
   }
 
   const addBarcode = () => {
+    // store.currentTemplate.createItem();
     store.currentTemplate.currentItem.changeValue1(barItems.join(','), 'barcode', 'BARCODE', barItems.join(','));
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem();
     setBarItems([])
     setDialogs({...dialogs, bar: false});
 
   }
 
   const addAttribute = (value) => () => {
+    // store.currentTemplate.createItem();
     store.currentTemplate.currentItem.changeValue1(`{${value.trackedEntityAttribute.id}}`, 'attribute', value.valueType, value.trackedEntityAttribute.name);
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem();
   }
 
   const addDataElement = (value, stage) => () => {
+    // store.currentTemplate.createItem()
     store.currentTemplate.currentItem.changeValue1(`{${value.dataElement.id}.${stage}`, 'dataElement', value.valueType, value.dataElement.name);
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem()
   }
 
   const addOther = (value) => () => {
+    // store.currentTemplate.createItem()
     store.currentTemplate.currentItem.changeValue1(`OU{${value}}`, 'OTHER', value, `OU{${value}}`);
     store.currentTemplate.addItem();
-    store.currentTemplate.createItem()
   }
 
   const handleCancel = (type) => e => {
-    setDialogs({...dialogs, [type]: false})
+    setDialogs({...dialogs, [type]: false});
   };
 
   const saveTemplate = async () => {
@@ -170,7 +169,7 @@ export const Template = observer(() => {
       case 'image':
         return <img src={item.value} alt="image"/>
       case 'qr':
-        return <QrCode value={item.value} renderAs="svg"/>
+        return <QrCode value={item.value} renderAs="canvas"/>
       case 'barcode':
         return <Barcode value={item.value}/>
       case 'TEXTBOX':
@@ -188,7 +187,7 @@ export const Template = observer(() => {
     setSize({...size, [type]: value})
   }
   return <div style={{display: 'flex', background: '#F7F7F7', flexDirection: 'column'}}>
-    <div style={{display: 'flex', marginBottom: 10, background: '#2B6693', flexDirection: 'column'}}>
+    <div style={{display: 'flex', marginBottom: 10, flexDirection: 'column'}}>
       <div style={{display: 'flex'}}>
         <div style={{width: '50%'}}>
           <Select
@@ -249,7 +248,7 @@ export const Template = observer(() => {
           xs: 480,
           xxs: 0
         }}
-        margin={[5, 5]}
+        margin={[10, 10]}
         cols={{
           xxl: 48,
           lg: 48,
@@ -270,6 +269,7 @@ export const Template = observer(() => {
             static: item.static
           }} onClick={() => store.currentTemplate.setCurrentItem(item)}>
             {display(item)}
+            <span className="close"/>
           </div>
         )}
       </ResponsiveGridLayout>
@@ -348,7 +348,7 @@ export const Template = observer(() => {
       onOk={addBarcode}
       onCancel={handleCancel('bar')}
     >
-      <SketchPicker />
+      <SketchPicker/>
     </Modal>
     <Modal
       title="BARCODE"

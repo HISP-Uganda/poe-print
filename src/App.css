@@ -12,3 +12,16 @@ img {
   background-color: #fbfbfb;
   cursor: pointer;
 }
+
+
+.close:before {
+  content: '✕';
+}
+
+.close {
+  display: none;
+  position: absolute;
+  top: -15px;
+  right: -5px;
+  cursor: pointer;
+}
