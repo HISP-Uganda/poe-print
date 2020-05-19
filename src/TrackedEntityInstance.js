@@ -245,8 +245,8 @@ const InstanceData = observer(() => {
 								<span style={{ paddingLeft: 5, fontWeight: 'bolder' }}>{store.currentInstance.QUrkIanwcHD}</span>
 							</p>
 						</td>
-						<td width="31%" vAlign="middle" className="s2" rowSpan={3}>
-							<p className="MsoNormal">&nbsp;</p>
+						<td width="31%" valign="middle" className="s2" rowSpan={3} style={{color: (results === 'Positive')?'red':'green' }}>
+							<p className="MsoNormal">COVID-19 TEST Results: &nbsp; {results}</p>
 						</td>
 					</tr>
 					<tr>
@@ -282,7 +282,7 @@ const InstanceData = observer(() => {
 						<td width="31%" vAlign="middle" className="s2" >
 							<p className="MsoNormal">Official Stamp</p>
 						</td>
-						<td width="31%" vAlign="middle" className="s2" rowSpan={11}>
+						<td width="31%" vAlign="middle" className="s2" rowSpan={12}>
 							<p className="MsoNormal">
 								<p style={{ margin: 0 }}>Malaba POE Incharge </p>
 								<p style={{ margin: 0 }}>Turyagyenda Dennis</p>
@@ -371,9 +371,6 @@ const InstanceData = observer(() => {
 						</td>
 						<td width="31%" vAlign="middle" className="s2">
 							<p className="MsoNormal">&nbsp;</p>
-						</td>
-						<td width="31%" vAlign="middle" className="s2">
-							<p className="MsoNormal">Results: &nbsp; {results}</p>
 						</td>
 
 					</tr>

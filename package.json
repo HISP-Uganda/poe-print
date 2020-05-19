@@ -1,6 +1,6 @@
 {
   "name": "Covid19-Pass",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "An app for printing Authorized Travel Pass for Cargo drivers and crew members into a country implmenting National Covid-19 Lockdown",
   "license": "BSD-3-Clause",
   "private": true,
