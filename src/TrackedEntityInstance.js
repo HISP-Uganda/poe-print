@@ -4,12 +4,7 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import { Menu, Modal, Table } from "antd";
 import QrCode from "qrcode.react";
 import { useConfig } from "@dhis2/app-runtime";
-import {
-  PrinterOutlined,
-  EyeOutlined,
-  HomeOutlined,
-  FormOutlined,
-} from "@ant-design/icons";
+import { PrinterOutlined, EyeOutlined, HomeOutlined } from "@ant-design/icons";
 import { observer } from "mobx-react";
 import { useStore } from "./context/context";
 import { isEmpty } from "lodash";
@@ -20,18 +15,16 @@ const InstanceData = observer(() => {
   const [imageUrl, setImageUrl] = useState("");
   const [verifier, setVerifier] = useState("");
   const [results, setResults] = useState("MISSING");
-  // const [finalVerifier, setFinalVerifier] = useState('');
   const { baseUrl } = useConfig();
-  const params = useParams();
+  const { instance, orgUnit } = useParams();
   const AESKey = "COVID-19R35P0N5E-2020";
-  // const appCrypt = new SimpleCrypto(AESKey);
   const program = store.programId;
   const programStage = store.programStageID;
   const url = window.location.href;
   const qr_dhis2_url = url.split("/api/")[0];
 
   useEffect(() => {
-    store.queryOneInstances(params.instance).then(() => {
+    store.queryOneInstances(instance, orgUnit).then(() => {
       if (
         store.currentInstance.cjl37qfdEK5 &&
         store.currentInstance.cjl37qfdEK5.ovY6E8BSdto
@@ -48,7 +41,7 @@ const InstanceData = observer(() => {
         ).toString()
       );
     });
-  }, [store, params]);
+  }, [store, instance, orgUnit]);
 
   return (
     <div>
@@ -442,7 +435,7 @@ const InstanceData = observer(() => {
                   width="31%"
                   valign="middle"
                   className="s2"
-                  rowSpan={3}
+                  rowSpan={2}
                   style={{
                     color:
                       results === "Positive"
@@ -452,7 +445,7 @@ const InstanceData = observer(() => {
                         : "green",
                   }}
                 >
-                  <p className="MsoNormal">
+                  <p className="MsoNormal" style={{ margin: 0 }}>
                     COVID-19 TEST Results: &nbsp; {results}
                   </p>
                 </td>
@@ -469,7 +462,7 @@ const InstanceData = observer(() => {
                   </p>
                 </td>
               </tr>
-              <tr>
+              {/* <tr>
                 <td width="36%" valign="middle" className="s1">
                   <p className="MsoNormal">Cleared to travel</p>
                 </td>
@@ -480,7 +473,7 @@ const InstanceData = observer(() => {
                     </span>
                   </p>
                 </td>
-              </tr>
+              </tr> */}
               <tr>
                 <td width="100%" colSpan={3} valign="middle" className="s4">
                   <p className="MsoListParagraph">
@@ -503,17 +496,16 @@ const InstanceData = observer(() => {
                 </td>
                 <td width="31%" valign="middle" className="s2" rowSpan={12}>
                   <div className="MsoNormal">
-                    <p style={{ margin: 0 }}>Malaba POE Incharge </p>
-                    <p style={{ margin: 0 }}>Turyagyenda Dennis</p>
-                    <p style={{ margin: 0 }}>0772667596/0702667596 </p>
-                    <p style={{ margin: 0 }}>turyadennis@gmail.com</p>
-                  </div>
-                  <br />
-                  <br />
-                  <div className="MsoNormal">
-                    <p style={{ margin: 0 }}>Busia POE Incharge</p>
-                    <p style={{ margin: 0 }}>Mr. Wabwire Tonny Fredrick</p>
-                    <p style={{ margin: 0 }}>0772 883898/0756 883898</p>
+                    <p style={{ margin: 0 }}>
+                      {store.currentInstance.orgUnitName} Incharge
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      {store.currentInstance.contactPerson}
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      {store.currentInstance.phoneNumber}
+                    </p>
+                    <p style={{ margin: 0 }}>{store.currentInstance.email}</p>
                   </div>
                 </td>
               </tr>

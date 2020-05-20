@@ -23,7 +23,7 @@ const MyApp = () => {
           <Route path="/templates/editor">
             <Template />
           </Route>
-          <Route path="/:instance">
+          <Route path="/:instance/:orgUnit">
             <TrackedEntityInstance />
           </Route>
         </Switch>
