@@ -32,7 +32,7 @@ const InstanceData = observer(() => {
         setResults(store.currentInstance.cjl37qfdEK5.ovY6E8BSdto);
       }
       setImageUrl(
-        `${baseUrl}/api/trackedEntityInstances/${store.currentInstance.trackedEntityInstance}/AsnwhQvSeMy/image?dimension=medium`
+        `${baseUrl}/api/trackedEntityInstances/${store.currentInstance.trackedEntityInstance}/AsnwhQvSeMy/image?dimension=MEDIUM`
       );
       setVerifier(
         AES.encrypt(
@@ -136,7 +136,7 @@ const InstanceData = observer(() => {
                     >
                       {
                         store.options["Countries"][
-                          store.currentInstance.XvETY1aTxuB
+                        store.currentInstance.XvETY1aTxuB
                         ]
                       }
                     </span>
@@ -316,7 +316,7 @@ const InstanceData = observer(() => {
                     >
                       {
                         store.options["Countries"][
-                          store.currentInstance.cW0UPEANS5t
+                        store.currentInstance.cW0UPEANS5t
                         ]
                       }
                     </span>
@@ -338,7 +338,7 @@ const InstanceData = observer(() => {
                     >
                       {
                         store.options["Countries"][
-                          store.currentInstance.pxcXhmjJeMv
+                        store.currentInstance.pxcXhmjJeMv
                         ]
                       }
                     </span>
@@ -441,8 +441,8 @@ const InstanceData = observer(() => {
                       results === "Positive"
                         ? "red"
                         : results === "MISSING"
-                        ? "black"
-                        : "green",
+                          ? "black"
+                          : "green",
                   }}
                 >
                   <p className="MsoNormal" style={{ margin: 0 }}>
@@ -583,47 +583,47 @@ const InstanceData = observer(() => {
           </table>
         </div>
       ) : (
-        <div
-          style={{
-            padding: 20,
-            display: "flex",
-            flexDirection: "column",
-            fontSize: "large",
-          }}
-        >
           <div
             style={{
-              width: "100%",
-              background: "#d8dce0",
-              height: 32,
+              padding: 20,
               display: "flex",
-              alignItems: "center",
-              alignContent: "center",
-              paddingLeft: 20,
+              flexDirection: "column",
+              fontSize: "large",
             }}
           >
-            NO DATA FOR AVAILABLE NOW FOR THE SPECIFIED INSTANCE. Please Reload
-            by clicking the link below
-          </div>
-          <div style={{ display: "flex", padding: 20 }}>
             <div
               style={{
-                display: "flex",
-                flexDirection: "column",
                 width: "100%",
+                background: "#d8dce0",
+                height: 32,
+                display: "flex",
                 alignItems: "center",
                 alignContent: "center",
+                paddingLeft: 20,
               }}
             >
-              <span style={{ marginTop: 30 }}>
-                <Link to="/">
-                  <HomeOutlined /> BACK TO LIST
+              NO DATA FOR AVAILABLE NOW FOR THE SPECIFIED INSTANCE. Please Reload
+              by clicking the link below
+          </div>
+            <div style={{ display: "flex", padding: 20 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "100%",
+                  alignItems: "center",
+                  alignContent: "center",
+                }}
+              >
+                <span style={{ marginTop: 30 }}>
+                  <Link to="/">
+                    <HomeOutlined /> BACK TO LIST
                 </Link>
-              </span>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 });
