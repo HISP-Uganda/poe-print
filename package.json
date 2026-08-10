@@ -15,7 +15,7 @@
     "url": "http://hispuganda.org/covid-19-pass"
   },
   "devDependencies": {
-    "@dhis2/cli-app-scripts": "^4.0.0"
+    "@dhis2/cli-app-scripts": "^7.8.0"
   },
   "dependencies": {
     "@ant-design/icons": "^4.0.6",
